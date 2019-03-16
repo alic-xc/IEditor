@@ -1,4 +1,5 @@
 import os
+import shutil
 from .cropperException import *
 
 
@@ -9,7 +10,7 @@ class Cropper:
     Non_Supported = ('gif','bitmap')
     ouptut_format = ('zip','directory')
 
-    def __init__(self, directory='', width='', height='', top_level='', format_type='all'):
+    def __init__(self, directory='', width='', height='', top_level=True, format_type='all', path='.'):
         """
         Set all variable needed
         Parameter lists
@@ -27,6 +28,10 @@ class Cropper:
         self.height = height
         self.pic_out_format = Cropper.validator(Cropper.Valid_Ext, format_type)
         self.directory = self._directory(directory)
+        self.temp_directory = f'{self.path}/temp_'
+        self.top_level = top_level
+        self.folder = True
+        self.path = path
 
     def run_process(self):
         """ An object Manager """
@@ -35,7 +40,32 @@ class Cropper:
         self.export_images()
 
     def fetch_images(self):
-        pass
+
+        try:
+            self._temp_dir('create')
+
+            if self.folder:
+                folder = ''
+
+                if self.top_level:
+                    folder = os.listdir(self.directory)
+
+                if not self.top_level:
+                    pass
+
+                for file in folder:
+
+                    if self.Ext == 'all':
+                        read_only = file.rsplit('.')[-1]
+
+                    if file.endswith(self.Ext) or read_only in Cropper.Valid_Ext:
+                        shutil.copy(file, self.temp_directory)
+
+        except :
+            pass
+
+        finally:
+            pass
 
 
     def export_images(self):
@@ -47,10 +77,13 @@ class Cropper:
     def _directory(self, directory):
         """ a checker that return either directory or file as output """
         try:
-            if not os.path.isdir(directory):
-                if not os.path.isdir(directory):
+            if not os.path.isdir(f"{self.path}/{directory}"):
+                self.folder = False
+
+                if not os.path.isfile(f"{self.path}/{directory}"):
                     raise ParameterError("directory (required either file or directory) ")
-            return directory
+
+            return f"{self.path}/{directory}"
 
         except ParameterError as e:
             print(e)
@@ -78,3 +111,29 @@ class Cropper:
 
         except Exception as e:
             pass
+
+    def _temp_dir(self, action='create'):
+        """
+        Perform simple function with this method
+        it help create or delete temporary folder
+
+        """
+        try:
+            if action == 'create':
+
+                os.mkdir(self.temp_directory)
+
+            if action == 'delete':
+
+                shutil.rmtree(self.temp_directory)
+
+            return True
+
+        except FileExistsError:
+
+            print("Folder already exist")
+        except Exception as e:
+
+            print(e)
+
+        return False
