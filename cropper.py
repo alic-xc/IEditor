@@ -26,6 +26,7 @@ class Cropper:
         self.width = width
         self.height = height
         self.pic_out_format = Cropper.validator(Cropper.Valid_Ext, format_type)
+        self.directory = self._directory(directory)
 
     def run_process(self):
         """ An object Manager """
@@ -42,6 +43,20 @@ class Cropper:
 
     def edit_images(self):
         pass
+
+    def _directory(self, directory):
+        """ a checker that return either directory or file as output """
+        try:
+            if not os.path.isdir(directory):
+                if not os.path.isdir(directory):
+                    raise ParameterError("directory (required either file or directory) ")
+            return directory
+
+        except ParameterError as e:
+            print(e)
+
+        return False
+
 
     @staticmethod
     def validator(lists, element ):
