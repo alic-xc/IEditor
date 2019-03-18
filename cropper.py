@@ -26,12 +26,12 @@ class Cropper:
         self.output_directory = "OUTPUT"
         self.width = width
         self.height = height
+        self.path = path
         self.pic_out_format = Cropper.validator(Cropper.Valid_Ext, format_type)
         self.directory = self._directory(directory)
-        self.temp_directory = f'{self.path}/temp_'
         self.top_level = top_level
         self.folder = True
-        self.path = path
+        self.temp_directory = f'{self.path}/temp_'
 
     def run_process(self):
         """ An object Manager """
