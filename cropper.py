@@ -61,7 +61,7 @@ class Cropper:
                         read_only = file.rsplit('.')[-1]
 
                     if file.endswith(self.ext) or read_only in Cropper.Valid_Ext:
-                        shutil.copy(self._full_path(file), self.temp_directory)
+                        shutil.copy(self._full_path(self.directory, file), self.temp_directory)
                         print(f"{file} copied successfully")
                         counter += 1
 
@@ -73,6 +73,7 @@ class Cropper:
             return False
 
     def export_images(self):
+        """ export edited images in temporary directory to zip format  """
         try:
             if not os.listdir(self.temp_directory):
                 raise EmptyDirectory("Empty folder")
@@ -80,12 +81,11 @@ class Cropper:
             export = zipfile.ZipFile(self.output, 'w', compression=zipfile.ZIP_DEFLATED)
 
             for filename in os.listdir(self.temp_directory):
-                export.write(self._full_path(filename))
+                export.write(self._full_path(self.temp_directory, filename), filename)
 
             shutil.rmtree(self.temp_directory)
 
-
-        except IsADirectoryError as e:
+        except EmptyDirectory as e:
 
             print(f"Error Found: {e}")
 
@@ -106,29 +106,10 @@ class Cropper:
         except ParameterError as e:
             print(e)
 
+        except IOError as e:
+            print(e)
         return False
 
-
-    @staticmethod
-    def validator(lists, element ):
-        """ a method for validating list, tuple or dictionary """
-        try:
-            if not isinstance(lists, list):
-                raise ParameterError('A list is required')
-
-            if element not in lists:
-                raise IndexError(" Item not present ")
-
-            return element
-
-        except ParameterError as e:
-            pass
-
-        except IndexError as e:
-            pass
-
-        except Exception as e:
-            pass
 
     def _temp_dir(self, action='create'):
         """
@@ -152,12 +133,32 @@ class Cropper:
             print(" Folder already exist \n deleting... \n  recreating temp folder")
             os.mkdir(self.temp_directory)
 
-
         except Exception as e:
 
             print(e)
 
         return False
 
-    def _full_path(self, relative_path):
+    def _full_path(self, directory, relative_path):
         return os.path.join(self.directory, relative_path)
+
+    @staticmethod
+    def validator(lists, element):
+        """ a method for validating list, tuple or dictionary """
+        try:
+            if not isinstance(lists, list):
+                raise ParameterError('A list is required')
+
+            if element not in lists:
+                raise IndexError(" Item not present ")
+
+            return element
+
+        except ParameterError as e:
+            pass
+
+        except IndexError as e:
+            pass
+
+        except Exception as e:
+            pass
