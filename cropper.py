@@ -1,5 +1,6 @@
 import os
 import shutil
+import zipfile
 from .cropperException import *
 
 
@@ -23,7 +24,7 @@ class Cropper:
         
         """
         self.ext = Cropper.validator(Cropper.Valid_Ext, format_type)
-        self.output_directory = "OUTPUT"
+        self.output = "OUTPUT.zip"
         self.width = width
         self.height = height
         self.path = path
@@ -31,7 +32,7 @@ class Cropper:
         self.directory = self._directory(directory)
         self.top_level = top_level
         self.folder = True
-        self.temp_directory = f'{self.path}/temp_'
+        self.temp_directory = './temp_'
 
     def run_process(self):
         """ An object Manager """
@@ -43,47 +44,64 @@ class Cropper:
 
         try:
             self._temp_dir('create')
-
+            counter = 0
             if self.folder:
                 folder = ''
+                read_only = ''
 
                 if self.top_level:
                     folder = os.listdir(self.directory)
 
                 if not self.top_level:
-                    pass
+                    folder = os.walk(self.directory)
 
                 for file in folder:
 
-                    if self.Ext == 'all':
+                    if self.ext == 'all':
                         read_only = file.rsplit('.')[-1]
 
-                    if file.endswith(self.Ext) or read_only in Cropper.Valid_Ext:
-                        shutil.copy(file, self.temp_directory)
+                    if file.endswith(self.ext) or read_only in Cropper.Valid_Ext:
+                        shutil.copy(self._full_path(file), self.temp_directory)
+                        print(f"{file} copied successfully")
+                        counter += 1
 
-        except :
-            pass
+                print(f"Done, {counter} image(s) copied successfully")
+                return True
 
-        finally:
-            pass
-
+        except Exception as e:
+            print(f"Error Found: {e}")
+            return False
 
     def export_images(self):
-        pass
+        try:
+            if not os.listdir(self.temp_directory):
+                raise EmptyDirectory("Empty folder")
+
+            export = zipfile.ZipFile(self.output, 'w', compression=zipfile.ZIP_DEFLATED)
+
+            for filename in os.listdir(self.temp_directory):
+                export.write(self._full_path(filename))
+
+            shutil.rmtree(self.temp_directory)
+
+
+        except IsADirectoryError as e:
+
+            print(f"Error Found: {e}")
 
     def edit_images(self):
         pass
 
-    def _directory(self, directory):
+    def _directory(self, node):
         """ a checker that return either directory or file as output """
         try:
-            if not os.path.isdir(f"{self.path}/{directory}"):
+            if not os.path.isdir(f"{self.path}/{node}"):
                 self.folder = False
 
-                if not os.path.isfile(f"{self.path}/{directory}"):
+                if not os.path.isfile(f"{self.path}/{node}"):
                     raise ParameterError("directory (required either file or directory) ")
 
-            return f"{self.path}/{directory}"
+            return f"{self.path}/{node}"
 
         except ParameterError as e:
             print(e)
@@ -130,10 +148,16 @@ class Cropper:
             return True
 
         except FileExistsError:
+            shutil.rmtree(self.temp_directory)
+            print(" Folder already exist \n deleting... \n  recreating temp folder")
+            os.mkdir(self.temp_directory)
 
-            print("Folder already exist")
+
         except Exception as e:
 
             print(e)
 
         return False
+
+    def _full_path(self, relative_path):
+        return os.path.join(self.directory, relative_path)

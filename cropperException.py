@@ -7,4 +7,8 @@ class ParameterError(Exception):
     pass
 
 
+class EmptyDirectory(Exception):
+
+    """ Handle Empty Directory"""
+    pass
 
