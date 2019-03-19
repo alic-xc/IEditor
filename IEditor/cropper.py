@@ -11,7 +11,7 @@ class Cropper:
     Non_Supported = ('gif','bitmap')
     ouptut_format = ('zip','directory')
 
-    def __init__(self, directory='', width='', height='', top_level=True, format_type='all', path='.'):
+    def __init__(self, directory='', width='', height='', top_level=True, format_type='all', path='.', output='all'):
         """
         Set all variable needed
         Parameter lists
@@ -28,7 +28,7 @@ class Cropper:
         self.width = width
         self.height = height
         self.path = path
-        self.pic_out_format = Cropper.validator(Cropper.Valid_Ext, format_type)
+        self.pic_out_format = Cropper.validator(Cropper.Valid_Ext, output)
         self.directory = self._directory(directory)
         self.top_level = top_level
         self.folder = True
@@ -110,7 +110,6 @@ class Cropper:
             print(e)
         return False
 
-
     def _temp_dir(self, action='create'):
         """
         Perform simple function with this method
@@ -140,25 +139,17 @@ class Cropper:
         return False
 
     def _full_path(self, directory, relative_path):
-        return os.path.join(self.directory, relative_path)
+        return os.path.join(directory, relative_path)
 
     @staticmethod
     def validator(lists, element):
         """ a method for validating list, tuple or dictionary """
         try:
-            if not isinstance(lists, list):
-                raise ParameterError('A list is required')
 
             if element not in lists:
                 raise IndexError(" Item not present ")
 
             return element
 
-        except ParameterError as e:
-            pass
-
-        except IndexError as e:
-            pass
-
         except Exception as e:
-            pass
+            print("")
